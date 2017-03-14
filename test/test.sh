@@ -19,7 +19,8 @@ rc="0"
 
 function test {
 	set +e
-	"$EXE" "$1" > "$TMPOUT" 2>&1 
+	FLAGS=${FLAGS:-}
+	"$EXE" ${FLAGS} "$1" > "$TMPOUT" 2>&1 
 	if [ -e "$1.base" ]; then
 		diff "$TMPOUT" "$1.base" > $TMPOUT.diff 2>&1
 		ec=$?
@@ -39,8 +40,10 @@ function test {
 	rm -f $TMPOUT.diff
 }
 
-for i in $(ls -1 ${DIR}/files | grep -v base); do
-	test "${DIR}/files/${i}"
+for i in $(find ${DIR}/files -name \*.md); do
+	test "${i}"
 done
+
+FLAGS=-v test ${DIR}/files
 
 exit $rc
