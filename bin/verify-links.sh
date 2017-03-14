@@ -28,13 +28,19 @@ set -o pipefail
 
 REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
 
-if [ "$*" != "" ]; then
-  args="$*"
-else
+args="$*"
+verbose=""
+
+if [[ " $args " == *" -v "* ]]; then
+  verbose="1"
+  args=$(echo $args | sed "s/ *-v *//")
+fi
+
+if [ "$args" == "" ]; then
   args="${REPO_ROOT}"
 fi
 
-mdFiles=$(find "${args}" -name "*.md" | grep -v vendor | grep -v glide)
+mdFiles=$(find "${args}" -name "*.md" | sort | grep -v vendor | grep -v glide)
 
 tmp=/tmp/out${RANDOM}
 
@@ -42,6 +48,8 @@ rm -f /tmp/$tmp*
 for file in ${mdFiles}; do
   # echo scanning $file
   dir=$(dirname $file)
+
+  [[ -n "$verbose" ]] && echo "Verifying: $file"
 
   # Replace ) with )\n so that each possible href is on its own line.
   # Then only grab lines that have [..](..) in them - put results in tmp file.
