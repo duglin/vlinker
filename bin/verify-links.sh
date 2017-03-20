@@ -80,13 +80,17 @@ for file in ${mdFiles}; do
     # Strip off the leading and trailing parens
     ref=${line#*(}
     ref=${ref%)*}
-	ref=$(echo $ref | sed "s/ *//" | sed "s/ *$//")
+    ref=$(echo $ref | sed "s/ *//" | sed "s/ *$//")
 
     # An external href (ie. starts with http)
     if [ "${ref:0:4}" == "http" ]; then 
       if ! wget --timeout=10 -O /dev/null ${ref} > /dev/null 2>&1 ; then
         echo $file: Can\'t load: url ${ref} | tee -a ${tmp}3
       fi
+      continue
+    fi
+
+    if [ "${ref:0:7}" == "mailto:" ]; then
       continue
     fi
 
