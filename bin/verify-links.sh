@@ -28,19 +28,20 @@ set -o pipefail
 
 REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
 
-args="$*"
 verbose=""
 
-if [[ " $args " == *" -v "* ]]; then
+if [[ "$1" == "-v" ]]; then
   verbose="1"
-  args=$(echo $args | sed "s/ *-v *//")
+  shift
 fi
 
-if [ "$args" == "" ]; then
-  args="${REPO_ROOT}"
+arg=""
+
+if [ "$*" == "" ]; then
+  arg="${REPO_ROOT}"
 fi
 
-mdFiles=$(find "${args}" -name "*.md" | sort | grep -v vendor | grep -v glide)
+mdFiles=$(find $* $arg -name "*.md" | sort | grep -v vendor | grep -v glide)
 
 tmp=/tmp/out${RANDOM}
 
