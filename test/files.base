@@ -1,3 +1,4 @@
+Verifying: test/files/dir.md
 Verifying: test/files/dir/subfile1.md
 test/files/dir/subfile1.md: Can't find: test/files/dir/../badlink.md
 Verifying: test/files/empty.md
@@ -6,11 +7,6 @@ test/files/missingmd.md: Can't find: test/files/nofile.md
 Verifying: test/files/nolinks.md
 Verifying: test/files/oneliner.md
 Verifying: test/files/split2.md
-test/files/split2.md: Can't find: test/files/badlink1.md
-test/files/split2.md: Can't find: test/files/badlink2.md
-test/files/split2.md: Can't find: test/files/badlink3.md
-test/files/split2.md: Can't find: test/files/badlink4.md
-test/files/split2.md: Can't find: test/files/badlink4.md
 test/files/split2.md: Can't find: test/files/badlink5.md
 Verifying: test/files/split3.md
 Verifying: test/files/split.md

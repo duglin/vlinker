@@ -1,20 +1,20 @@
-[link1]
+[newline]
 (badlink1.md)
-[link2]
+[newline spaces]
     (badlink2.md)
-[link3]       (badlink3.md)
-[link4]
+[spaces]       (badlink3.md)
+[lots of newlines]
 
 
 (badlink4.md)
 [
-link4
+lots of newlines but should work
 ](
-badlink4.md
+badlink5.md
 )
 [
-link5
+lots of newlines but should not show a link
 ]
 (
-badlink5.md
+badlink6.md
 )
