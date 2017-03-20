@@ -10,3 +10,4 @@ Verifying: test/files/split2.md
 test/files/split2.md: Can't find: test/files/badlink5.md
 Verifying: test/files/split3.md
 Verifying: test/files/split.md
+Verifying: test/files/unclosed.md
