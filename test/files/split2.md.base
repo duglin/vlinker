@@ -1,6 +1,1 @@
-test/files/split2.md: Can't find: test/files/badlink1.md
-test/files/split2.md: Can't find: test/files/badlink2.md
-test/files/split2.md: Can't find: test/files/badlink3.md
-test/files/split2.md: Can't find: test/files/badlink4.md
-test/files/split2.md: Can't find: test/files/badlink4.md
 test/files/split2.md: Can't find: test/files/badlink5.md

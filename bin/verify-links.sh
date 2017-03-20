@@ -55,17 +55,17 @@ for file in ${mdFiles}; do
   # Then only grab lines that have [..](..) in them - put results in tmp file.
   # If the file doesn't have any lines with [..](..) then skip this file
   cat $file | \
-    tr -d '\n' | \
+    tr '\n' ' ' | \
     sed "s/)/)\n/g" | \
-    grep "\[.*\]\s*(.*)" > ${tmp}1 || continue
+    grep "\[.*\](.*)" > ${tmp}1 || continue
 
   # This sed will extract the href portion of the [..](..) - meaning
   # the stuff in the parens.
-  sed "s/.*\(\[[^\[\]*\][[:blank:]]([^()]*)\)/\1/" < ${tmp}1 > ${tmp}2  || continue
+  sed "s/.*\(\[[^\[\]*\]]([^()]*)\)/\1/" < ${tmp}1 > ${tmp}2  || continue
 
   # Extract all headings/anchors.
   # And strip off the leading #'s and leading/trailing blanks
-  grep "^ *#" < $file | sed "s/ *#* *\(.*\) *$/\1/" > ${tmp}anchors || true
+  grep "^[[:blank:]]*#" < $file | sed "s/[[:blank:]]*#*[[:blank:]]*\(.*\)[[:blank:]]*$/\1/" > ${tmp}anchors || true
 
   # Now convert the header to what the anchor will look like.
   # - lower case stuff
@@ -80,6 +80,7 @@ for file in ${mdFiles}; do
     # Strip off the leading and trailing parens
     ref=${line#*(}
     ref=${ref%)*}
+	ref=$(echo $ref | sed "s/ *//" | sed "s/ *$//")
 
     # An external href (ie. starts with http)
     if [ "${ref:0:4}" == "http" ]; then 
