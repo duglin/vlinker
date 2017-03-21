@@ -29,11 +29,38 @@ set -o pipefail
 REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
 
 verbose=""
+debug=""
+stop=""
 
-if [[ "$1" == "-v" ]]; then
-  verbose="1"
+while [[ "$#" != "0" && "$1" == "-"* ]]; do
+  opts="${1:1}"
+  while [[ "$opts" != "" ]]; do
+    case "${opts:0:1}" in
+      v) verbose="1" ;;
+      d) debug="1" ; verbose="1" ;;
+      -) stop="1" ;;
+      ?) echo "Usage: $0 [OPTION]... [DIR|FILE]..."
+         echo "Verify all links in markdown files."
+         echo
+         echo "  -v   show each file as it is checked"
+         echo "  -d   show each href as it is found"
+         echo "  -?   show this help text"
+         echo "  --   treat remainder of args as dir/files"
+         exit 0 ;;
+      *) echo "Unknown option '${opts:0:1}'"
+         exit 1 ;;
+    esac
+    opts="${opts:1}"
+  done
   shift
-fi
+  if [[ "$stop" == "1" ]]; then
+    break
+  fi
+done
+
+# echo verbose:$verbose
+# echo debug:$debug
+# echo args:$*
 
 arg=""
 
@@ -78,13 +105,18 @@ for file in ${mdFiles}; do
     sed "s/[^-a-zA-Z0-9]//g" > ${tmp}anchors1
 
   cat ${tmp}2 | while read line ; do
-    # Strip off the leading and trailing parens
+    # Strip off the leading and trailing parens, and then spaces
     ref=${line#*(}
     ref=${ref%)*}
     ref=$(echo $ref | sed "s/ *//" | sed "s/ *$//")
 
+    # When 'debug' is set show all hrefs - mainly for verifying in our tests
+    if [[ "$debug" == "1" ]]; then
+      echo "Found: '$ref'"
+    fi
+
     # An external href (ie. starts with http)
-    if [ "${ref:0:4}" == "http" ]; then 
+    if [ "${ref:0:4}" == "http" ]; then
       if ! wget --timeout=10 -O /dev/null ${ref} > /dev/null 2>&1 ; then
         echo $file: Can\'t load: url ${ref} | tee -a ${tmp}3
       fi
@@ -95,9 +127,9 @@ for file in ${mdFiles}; do
       continue
     fi
 
-    # Local file href - skip for now. 
+    # Local file href - skip for now.
     # TODO add support for checking these
-    if [ "${ref:0:1}" == "#" ]; then 
+    if [ "${ref:0:1}" == "#" ]; then
       ref=${ref:1}
       if ! grep "^$ref$" ${tmp}anchors1 > /dev/null 2>&1 ; then
         echo $file: Can\'t find anchor \'\#${ref}\' | tee -a ${tmp}3
