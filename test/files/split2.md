@@ -20,4 +20,5 @@ badlink6.md
 )
 
 == EXPECTED ==
+Verifying: test/files/split2.md
 test/files/split2.md: Can't find: test/files/badlink5.md

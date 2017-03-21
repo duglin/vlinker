@@ -41,7 +41,7 @@ function test {
 }
 
 for i in $(find ${DIR}/files -name \*.md); do
-	test "${i}"
+	FLAGS=-v test "${i}"
 done
 
 FLAGS=-v test ${DIR}/files
