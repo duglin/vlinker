@@ -91,7 +91,7 @@ for file in ${mdFiles}; do
   cat $file | \
     tr '\n' ' ' | \
     sed "s/)/)\n/g" | \
-	sed "s/^/ /g" | \
+    sed "s/^/ /g" | \
     grep "[^\\]\[.*\](.*)" > ${tmp}1 || continue
 
   # This sed will extract the href portion of the [..](..) - meaning
@@ -134,14 +134,61 @@ for file in ${mdFiles}; do
       continue
     fi
 
-    # Local file href - skip for now.
-    # TODO add support for checking these
-    if [ "${ref:0:1}" == "#" ]; then
-      ref=${ref:1}
-      if ! grep "^$ref$" ${tmp}anchors1 > /dev/null 2>&1 ; then
-        echo $file: Can\'t find anchor \'\#${ref}\' | tee -a ${tmp}3
+    # Local file href (i.e. ref contains a #) 
+    # Also supports references to different files
+    if [[ "${ref/\#}" != "${ref}" ]]; then
+      # Matches ref that does not contain any dashes for the last 3 characters
+      refend=${ref: -3}
+      # Verify that if a dash exists at the end of a ref that it's numerical
+      if [ "${refend/-}" != "${refend}" ]; then  
+        numcheck=$(echo ${refend}| rev | fold -w1 |grep -na -m1 "-" |cut -d":" -f1)
+        if ! echo ${refend: -$((numcheck-1))} |grep '[0-9]' >/dev/null; then
+          # If the character at the end of the ref is not a number we want to 
+          # process it in the first loop.
+          refend=''
+        fi
       fi
-      continue
+      #if echo "${refend -$((numcheck-1))}" | grep '[0-9]' >/dev/null; then
+      #  echo 'Invalid input'
+      #fi
+      if [ "${refend/-}" == "${refend}" ]; then
+        if [ "${ref:0:1}" == "#" ]; then
+          ref=${ref:1}
+          fullpath=${file}
+        else
+          # Getting the # character location within the ref string
+          aloc=$(echo ${ref} | fold -w1 |grep -n "#" |cut -d":" -f1)
+          fullpath=${dir}/${ref:0:$((aloc-1))}
+          ref=${ref:$aloc}
+        fi
+        if ! grep "#${ref}" ${fullpath} > /dev/null 2>&1 ; then
+          echo $file: Can\'t find anchor1 \'\#${ref}\' | tee -a ${tmp}3
+        fi
+        continue
+      # Matches ref that includes dashes
+      else
+        # Find the negative index of the - in the refend string
+        dloc=$(echo ${refend}| rev | fold -w1 |grep -na -m1 "-" |cut -d":" -f1)
+        # split up reoccuring links ex. Overview-2 to ref=Overview and refcount=2
+        refcount=${refend: -$((dloc-1))}
+        ref=${ref:0: -$dloc}
+        if [ "${ref:0:1}" == "#" ]; then
+          ref=${ref:1}
+          fullpath=${file}
+        else
+          # Getting the # character location of # within the ref string
+          aloc=$(echo ${ref} | fold -w1 |grep -n "#" |cut -d":" -f1)
+          fullpath=${dir}/${ref:0:$((aloc-1))}
+          ref=${ref:$aloc}
+        fi
+        grepcount=$(grep -n "#${ref}" ${fullpath} | tail -n1 |cut -d":" -f1)
+        # if results are returned set value to 0
+        : ${groupcount:=0}
+        if [ ${refcount} -ge $grepcount ]; then
+          echo $file: Can\'t find anchor2 \'\#${ref}\' | tee -a ${tmp}3
+        fi
+        continue
+      fi
     fi
 
     newPath=${dir}/${ref}

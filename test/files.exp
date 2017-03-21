@@ -1,5 +1,5 @@
-Verifying: test/files/altnchor.md
-Verifying: test/files/anchor.md
+Verifying: test/files/anchor1.md
+Verifying: test/files/anchor2.md
 Verifying: test/files/dir.md
 Verifying: test/files/dir/subfile1.md
 test/files/dir/subfile1.md: Can't find: test/files/dir/../badlink.md
