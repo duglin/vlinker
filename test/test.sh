@@ -12,7 +12,7 @@ TMPOUT=/tmp/out.$RANDOM
 trap cleanup EXIT
 
 function cleanup {
-	rm -f $TMPOUT > /dev/null
+	rm -f $TMPOUT $TMPOUT.* > /dev/null
 }
 
 rc="0"
@@ -21,23 +21,23 @@ function test {
 	set +e
 	FLAGS=${FLAGS:-}
 	"$EXE" ${FLAGS} "$1" > "$TMPOUT" 2>&1 
-	if [ -e "$1.base" ]; then
-		diff "$TMPOUT" "$1.base" > $TMPOUT.diff 2>&1
+	if [ -e "$1.exp" ]; then
+		diff "$TMPOUT" "$1.exp" > $TMPOUT.diff 2>&1
 		ec=$?
 	else
-		diff "$TMPOUT" /dev/null > $TMPOUT.diff 2>&1
+		sed -n '/^== *EXPECTED *==/,$p' < "$1" | grep -v EXPECTED > $TMPOUT.exp
+		diff "$TMPOUT" $TMPOUT.exp > $TMPOUT.diff 2>&1
 		ec=$?
 	fi
 	if [[ "$ec" == "0" ]]; then
 		echo "PASS: $1"
 	else
 		echo "FAIL: $1"
-		echo "      diff $TMPOUT $1.base"
-		cat $TMPOUT.diff | sed "s/^/      /"
+		echo "      diffing output expected"
+		cat $TMPOUT.diff | sed "s/^/      /"   # indent output
 		rc="1"
 	fi
 	set -e
-	rm -f $TMPOUT.diff
 }
 
 for i in $(find ${DIR}/files -name \*.md); do

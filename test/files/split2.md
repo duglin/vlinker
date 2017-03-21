@@ -18,3 +18,6 @@ lots of newlines but should not show a link
 (
 badlink6.md
 )
+
+== EXPECTED ==
+test/files/split2.md: Can't find: test/files/badlink5.md
