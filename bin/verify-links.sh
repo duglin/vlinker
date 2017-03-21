@@ -82,10 +82,17 @@ for file in ${mdFiles}; do
   # Replace ) with )\n so that each possible href is on its own line.
   # Then only grab lines that have [..](..) in them - put results in tmp file.
   # If the file doesn't have any lines with [..](..) then skip this file
+  # Steps:
+  #  tr   - convert all \n to a space since newlines shouldn't change anything
+  #  sed  - add a \n after each ) since ) ends what we're looking for.
+  #         This makes it so that each href is on a line by itself
+  #  sed  - prefix each line with a space so the grep can do [^\\]
+  #  grep - find all lines that match [...](...)
   cat $file | \
     tr '\n' ' ' | \
     sed "s/)/)\n/g" | \
-    grep "\[.*\](.*)" > ${tmp}1 || continue
+	sed "s/^/ /g" | \
+    grep "[^\\]\[.*\](.*)" > ${tmp}1 || continue
 
   # This sed will extract the href portion of the [..](..) - meaning
   # the stuff in the parens.

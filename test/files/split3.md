@@ -20,3 +20,6 @@ link5
 (
 empty.md
 )
+
+== EXPECTED ==
+Verifying: test/files/split3.md
