@@ -62,7 +62,7 @@ for file in ${mdFiles}; do
 
   # This sed will extract the href portion of the [..](..) - meaning
   # the stuff in the parens.
-  sed "s/.*\(\[[^\[\]*\]]([^()]*)\)/\1/" < ${tmp}1 > ${tmp}2  || continue
+  sed "s/.*\[*\]\([^()]*\)/\1/" < ${tmp}1 > ${tmp}2  || continue
 
   # Extract all headings/anchors.
   # And strip off the leading #'s and leading/trailing blanks
