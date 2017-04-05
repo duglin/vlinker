@@ -7,12 +7,16 @@ Verifying: test/files/empty.md
 Verifying: test/files/missingmd.md
 test/files/missingmd.md: Can't find: test/files/nofile.md
 Verifying: test/files/nolinks.md
+Verifying: test/files/numend1.md
+Verifying: test/files/numend2.md
 Verifying: test/files/oneliner.md
 Verifying: test/files/simple.md
 test/files/simple.md: Can't find: test/files/link1.md
 test/files/simple.md: Can't find: test/files/link2.md
 test/files/simple.md: Can't find: test/files/bmark1
 test/files/simple.md: Can't find: test/files/link3.md
+Verifying: test/files/specials1.md
+Verifying: test/files/specials2.md
 Verifying: test/files/split2.md
 test/files/split2.md: Can't find: test/files/badlink5.md
 Verifying: test/files/split3.md
