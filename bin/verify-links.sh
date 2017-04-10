@@ -137,42 +137,42 @@ for file in ${mdFiles}; do
     # Local repo markdown link (i.e. ref contains a #) 
     if [[ "${ref/\#}" != "${ref}" ]]; then
       # Check to see if the link starts with a hash, if not we need to update the filepath
-	  if [ "${ref:0:1}" != "#" ]; then
-		# Split ref into filepath and the section link if external file referenced
-		reffile=$(echo ${ref} | awk -F"#" '{print $1}') 
+      if [ "${ref:0:1}" != "#" ]; then
+        # Split ref into filepath and the section link if external file referenced
+        reffile=$(echo ${ref} | awk -F"#" '{print $1}') 
         fullpath=${dir}/${reffile}
-		ref=$(echo ${ref} | awk -F"#" '{$1=""; print $0}')
+        ref=$(echo ${ref} | awk -F"#" '{$1=""; print $0}')
       else
         fullpath=${file}
-		ref=${ref:1}
-	  fi
+        ref=${ref:1}
+      fi
       # check last 3 for dashes and num regex if so
-	  refend=${ref: -3}
-	  # Check if reference potentially contains a link to a deplicate section name. 
-	  # This supports up to 99 duplicte names.
+      refend=${ref: -3}
+      # Check if reference potentially contains a link to a deplicate section name. 
+      # This supports up to 99 duplicte names.
       if [[ "${refend}" =~ .-[0-9]{1,3} ]]; then
         ref=$(echo ${ref} |awk -F"-" '{$NF=""; print $0}')
       fi
       # Search fullpath for sections, remove apostophes,
-	  grep "^#" ${fullpath} | tr -s '#' | sed "s/'//g" > ${tmp}sections
-	  # then replace special characters with dashes
-	  grep "^#" ${tmp}sections | sed -re "s/([^[:alpha:][:digit:]]#)/-/g" | tr -s '-' > ${tmp}sections1  
+      grep "^#" ${fullpath} | tr -s '#' | sed "s/'//g" > ${tmp}sections
+      # then replace special characters with dashes
+      grep "^#" ${tmp}sections | sed -re "s/([^[:alpha:][:digit:]]#)/-/g" | tr -s '-' > ${tmp}sections1  
       # Replace dashes with repeating wild cards so links will match correctly
-	  wildref=$(echo ${ref} | sed 's/-/\.\*/g')
-	  if ! grep -i "#.*${wildref}" ${tmp}sections1 > /dev/null 2>&1 ; then
-		echo $file: Can\'t find section \'\#${ref}\' in ${fullpath} | tee -a ${tmp}3
+      wildref=$(echo ${ref} | sed 's/-/\.\*/g')
+      if ! grep -i "#.*${wildref}" ${tmp}sections1 > /dev/null 2>&1 ; then
+        echo $file: Can\'t find section \'\#${ref}\' in ${fullpath} | tee -a ${tmp}3
       fi
       continue
-	fi
+    fi
 
-	newPath=${dir}/${ref}
+    newPath=${dir}/${ref}
 
-	# And finally make sure the file is there
-	# debug line: echo ref: $ref "->" $newPath
-	if ! ls "${newPath}" > /dev/null 2>&1 ; then
-	  echo $file: Can\'t find: ${newPath} | tee -a ${tmp}3
-	  failed=true
-	fi
+    # And finally make sure the file is there
+    # debug line: echo ref: $ref "->" $newPath
+    if ! ls "${newPath}" > /dev/null 2>&1 ; then
+      echo $file: Can\'t find: ${newPath} | tee -a ${tmp}3
+      failed=true
+    fi
 
   done
 done
