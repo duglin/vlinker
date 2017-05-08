@@ -5,9 +5,12 @@ Verifying: test/files/anchor2.md
 Verifying: test/files/dir.md
 Verifying: test/files/dir/subfile1.md
 test/files/dir/subfile1.md: Can't find: test/files/dir/../badlink.md
+Verifying: test/files/dup.md
 Verifying: test/files/empty.md
 Verifying: test/files/missingmd.md
 test/files/missingmd.md: Can't find: test/files/nofile.md
+Verifying: test/files/nada.md
+test/files/nada.md: Can't find section '#bad' in test/files/nada.md
 Verifying: test/files/nolinks.md
 Verifying: test/files/numend1.md
 Verifying: test/files/numend2.md
