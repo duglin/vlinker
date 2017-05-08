@@ -10,5 +10,11 @@ This is a section that has an apostrophe in the title for specials.md
 Are you sure Feature-X is something the Kubernetes team wants or will accept, or
 that it is implemented to fit with other changes in flight?
 
+my header <a name="mine"></a>
+
+[back pointer](#mine)
+[bad back pointer](#yours)
+
 == EXPECTED ==
 Verifying: test/files/specials1.md
+test/files/specials1.md: Can't find section '#yours' in test/files/specials1.md
