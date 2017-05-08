@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2017 The Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@
 # default arg is root of our source tree
 
 set -o errexit
-set -o nounset
+# set -o nounset
 set -o pipefail
 
 REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
@@ -98,19 +98,6 @@ for file in ${mdFiles}; do
   # the stuff in the parens.
   sed "s/.*\[*\]\([^()]*\)/\1/" < ${tmp}1 > ${tmp}2  || continue
 
-  # Extract all headings/anchors.
-  # And strip off the leading #'s and leading/trailing blanks
-  grep "^[[:blank:]]*#" < $file | sed "s/[[:blank:]]*#*[[:blank:]]*\(.*\)[[:blank:]]*$/\1/" > ${tmp}anchors || true
-
-  # Now convert the header to what the anchor will look like.
-  # - lower case stuff
-  # - convert spaces to -'s
-  # - remove punctuation marks (only accept 0-9, a-z
-  cat ${tmp}anchors | \
-    tr '[:upper:]' '[:lower:]' | \
-    sed "s/ /-/g" | \
-    sed "s/[^-a-zA-Z0-9]//g" > ${tmp}anchors1
-
   cat ${tmp}2 | while read line ; do
     # Strip off the leading and trailing parens, and then spaces
     ref=${line#*(}
@@ -134,44 +121,65 @@ for file in ${mdFiles}; do
       continue
     fi
 
-    # Local repo markdown link (i.e. ref contains a #) 
+    # Local file link (i.e. ref contains a #)
     if [[ "${ref/\#}" != "${ref}" ]]; then
-      # Check to see if the link starts with a hash, if not we need to update the filepath
+
+      # If ref doesn't start with "#" then update filepath
       if [ "${ref:0:1}" != "#" ]; then
-        # Split ref into filepath and the section link if external file referenced
-        reffile=$(echo ${ref} | awk -F"#" '{print $1}') 
+        # Split ref into filepath and the section link
+        reffile=$(echo ${ref} | awk -F"#" '{print $1}')
         fullpath=${dir}/${reffile}
         ref=$(echo ${ref} | awk -F"#" '{$1=""; print $0}')
       else
         fullpath=${file}
         ref=${ref:1}
       fi
-      # check last 3 for dashes and num regex if so
-      refend=${ref: -3}
-      # Check if reference potentially contains a link to a deplicate section name. 
-      # This supports up to 99 duplicte names.
-      if [[ "${refend}" =~ .-[0-9]{1,3} ]]; then
-        ref=$(echo ${ref} |awk -F"-" '{$NF=""; print $0}')
+
+      ref=$(echo ${ref} | \
+        sed 's/^[[:space:]]*//' | \
+        sed 's/[[:space:]]*$//' )
+
+      # Search fullpath for section
+      unset seen
+      declare -A seen
+      grep "^[[:space:]]*#" < ${fullpath} | \
+        sed 's/[[:space:]]*##*[[:space:]]*//' | \
+        sed 's/[[:space:]]*$//' | \
+        tr '[:upper:]' '[:lower:]' | \
+        sed "s/  */-/g" | \
+        sed "s/[^-a-zA-Z0-9]//g" | while read section ; do
+          if [[ "${seen[${section}]}" == "" ]]; then
+            echo ${section}
+            seen[${section}]="1"
+          else
+            echo $section"-"${seen[${section}]}
+            let seen[${section}]+=1
+          fi
+        done > ${tmp}sections1
+
+      # Add sections of the form <a name="xxx">
+      grep "<a name=" <${fullpath} | \
+        sed 's/<a name="/\n<a name="/g' | \
+        sed 's/^.*<a name="\(.*\)">.*$/\1/' | \
+        sort | uniq >> ${tmp}sections1 || true
+
+      # echo sections ; cat ${tmp}sections1
+
+      if ! grep "^${ref}$" ${tmp}sections1 > /dev/null 2>&1 ; then
+        echo $file: Can\'t find section \'\#${ref}\' in ${fullpath} | \
+          tee -a ${tmp}3
       fi
-      # Search fullpath for sections, remove apostophes,
-      grep "^#" ${fullpath} | tr -s '#' | sed "s/'//g" > ${tmp}sections
-      # then replace special characters with dashes
-      grep "^#" ${tmp}sections | sed -re "s/([^[:alpha:][:digit:]]#)/-/g" | tr -s '-' > ${tmp}sections1  
-      # Replace dashes with repeating wild cards so links will match correctly
-      wildref=$(echo ${ref} | sed 's/-/\.\*/g')
-      if ! grep -i "#.*${wildref}" ${tmp}sections1 > /dev/null 2>&1 ; then
-        echo $file: Can\'t find section \'\#${ref}\' in ${fullpath} | tee -a ${tmp}3
-      fi
+
       continue
+
     fi
 
     newPath=${dir}/${ref}
 
     # And finally make sure the file is there
     # debug line: echo ref: $ref "->" $newPath
-    if ! ls "${newPath}" > /dev/null 2>&1 ; then
+    if [[ ! -e "${newPath}" ]]; then
       echo $file: Can\'t find: ${newPath} | tee -a ${tmp}3
-      failed=true
     fi
 
   done

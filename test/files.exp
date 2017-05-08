@@ -1,4 +1,6 @@
 Verifying: test/files/anchor1.md
+test/files/anchor1.md: Can't find section '#Overview' in test/files/anchor1.md
+test/files/anchor1.md: Can't find section '#Overview' in test/files/anchor2.md
 Verifying: test/files/anchor2.md
 Verifying: test/files/dir.md
 Verifying: test/files/dir/subfile1.md
@@ -16,6 +18,7 @@ test/files/simple.md: Can't find: test/files/link2.md
 test/files/simple.md: Can't find: test/files/bmark1
 test/files/simple.md: Can't find: test/files/link3.md
 Verifying: test/files/specials1.md
+test/files/specials1.md: Can't find section '#yours' in test/files/specials1.md
 Verifying: test/files/specials2.md
 Verifying: test/files/split2.md
 test/files/split2.md: Can't find: test/files/badlink5.md
