@@ -23,21 +23,37 @@
 # default arg is root of our source tree
 
 set -o errexit
-# set -o nounset
+set -o nounset
 set -o pipefail
 
 REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
 
 verbose=""
-debug=""
+debugFlag=""
 stop=""
+tmp=/tmp/out${RANDOM}
+
+trap clean EXIT
+unset seenFiles
+declare -A seenFiles
+let numSeenFiles=0 || true
+
+function debug {
+  if [[ "$debugFlag" != "" ]]; then
+    (>&2 echo $*)
+  fi
+}
+
+function clean {
+  rm -f ${tmp}*
+}
 
 while [[ "$#" != "0" && "$1" == "-"* ]]; do
   opts="${1:1}"
   while [[ "$opts" != "" ]]; do
     case "${opts:0:1}" in
       v) verbose="1" ;;
-      d) debug="1" ; verbose="1" ;;
+      d) debugFlag="1" ; verbose="1" ;;
       -) stop="1" ;;
       ?) echo "Usage: $0 [OPTION]... [DIR|FILE]..."
          echo "Verify all links in markdown files."
@@ -59,7 +75,7 @@ while [[ "$#" != "0" && "$1" == "-"* ]]; do
 done
 
 # echo verbose:$verbose
-# echo debug:$debug
+# echo debugFlag:$debugFlag
 # echo args:$*
 
 arg=""
@@ -70,9 +86,7 @@ fi
 
 mdFiles=$(find $* $arg -name "*.md" | sort | grep -v vendor | grep -v glide)
 
-tmp=/tmp/out${RANDOM}
-
-rm -f /tmp/$tmp*
+clean
 for file in ${mdFiles}; do
   # echo scanning $file
   dir=$(dirname $file)
@@ -104,10 +118,8 @@ for file in ${mdFiles}; do
     ref=${ref%)*}
     ref=$(echo $ref | sed "s/ *//" | sed "s/ *$//")
 
-    # When 'debug' is set show all hrefs - mainly for verifying in our tests
-    if [[ "$debug" == "1" ]]; then
-      echo "Found: '$ref'"
-    fi
+    # Show all hrefs - mainly for verifying in our tests
+    debug "Found: '$ref'"
 
     # An external href (ie. starts with http)
     if [ "${ref:0:4}" == "http" ]; then
@@ -117,6 +129,7 @@ for file in ${mdFiles}; do
       continue
     fi
 
+    # Skip "mailto:" refs
     if [ "${ref:0:7}" == "mailto:" ]; then
       continue
     fi
@@ -135,37 +148,68 @@ for file in ${mdFiles}; do
         ref=${ref:1}
       fi
 
-      ref=$(echo ${ref} | \
-        sed 's/^[[:space:]]*//' | \
-        sed 's/[[:space:]]*$//' )
+      # Remove leading and trailing spaces
+      ref=$(echo ${ref} | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
 
-      # Search fullpath for section
-      unset seen
-      declare -A seen
-      grep "^[[:space:]]*#" < ${fullpath} | \
-        sed 's/[[:space:]]*##*[[:space:]]*//' | \
-        sed 's/[[:space:]]*$//' | \
-        tr '[:upper:]' '[:lower:]' | \
-        sed "s/  */-/g" | \
-        sed "s/[^-a-zA-Z0-9]//g" | while read section ; do
-          if [[ "${seen[${section}]}" == "" ]]; then
-            echo ${section}
-            seen[${section}]="1"
-          else
-            echo $section"-"${seen[${section}]}
-            let seen[${section}]+=1
-          fi
-        done > ${tmp}sections1
+      # If we've seen this file before then grab its processed tmp file
+      if [[ "${seenFiles[${fullpath}]+x}" != "" ]]; then
+        anchorFile="${seenFiles[${fullpath}]}"
+      else
+        let numSeenFiles+=1
+        anchorFile="${tmp}-anchors-${numSeenFiles}"
+        seenFiles[${fullpath}]="${anchorFile}"
 
-      # Add sections of the form <a name="xxx">
-      grep "<a name=" <${fullpath} | \
-        sed 's/<a name="/\n<a name="/g' | \
-        sed 's/^.*<a name="\(.*\)">.*$/\1/' | \
-        sort | uniq >> ${tmp}sections1 || true
+        # Search file for sections
+        unset used
+        declare -A used  # anchors used, seen+twiddled ones
 
-      # echo sections ; cat ${tmp}sections1
+        # Find all section headers in the file.
+        # Remove leading & trailing spaces.
+        # Lower case it.
+        # Convert spaces to "-".
+        # Drop all non alphanumeric chars.
+        # Twiidle section anchor if we've seen it before.
+        grep "^[[:space:]]*#" < ${fullpath} | \
+          sed 's/[[:space:]]*##*[[:space:]]*//' | \
+          sed 's/[[:space:]]*$//' | \
+          tr '[:upper:]' '[:lower:]' | \
+          sed "s/  */-/g" | \
+          sed "s/[^-a-zA-Z0-9]//g" | while read section ; do
+            # If we haven't used this exact anchor before just use it now
+            if [[ "${used[${section}]+x}" == "" ]]; then
+              anchor=${section}
+            else
+              # We've used this anchor before so add "-#" to the end.
+              # Keep adding 1 to "#" until we find a free spot.
+              let num=1
+              while true; do
+                anchor="${section}-${num}"
+                if [[ "${used[${anchor}]+x}" == "" ]]; then
+                  break
+                fi
+                let num+=1
+              done
+            fi
 
-      if ! grep "^${ref}$" ${tmp}sections1 > /dev/null 2>&1 ; then
+            echo "${anchor}"
+            used[${anchor}]="1"
+
+            debug "Mapped section '${section}' to '${anchor}'"
+
+          done > ${anchorFile} || true
+
+        # Add sections of the form <a name="xxx">
+        grep "<a name=" <${fullpath} | \
+          sed 's/<a name="/\n<a name="/g' | \
+          sed 's/^.*<a name="\(.*\)">.*$/\1/' | \
+          sort | uniq >> ${anchorFile} || true
+
+        # echo sections ; cat ${tmp}sections1
+      fi
+
+      # Finally, look for the ref in the list of sections/anchors
+      debug "Anchor file(${fullpath}): ${anchorFile}"
+      if ! grep "^${ref}$" ${anchorFile} > /dev/null 2>&1 ; then
         echo $file: Can\'t find section \'\#${ref}\' in ${fullpath} | \
           tee -a ${tmp}3
       fi
@@ -188,5 +232,4 @@ rc=0
 if [ -a ${tmp}3 ]; then
   rc=1
 fi
-rm -f ${tmp}*
 exit $rc
