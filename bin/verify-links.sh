@@ -148,14 +148,14 @@ for file in ${mdFiles}; do
         ref=${ref:1}
       fi
 
+	  if [[ ! -e "${fullpath}" ]]; then
+	  	echo "$file: Can't find referenced file '${fullpath}'" | \
+		  tee -a ${tmp}3
+	    continue
+	  fi
+
       # Remove leading and trailing spaces
       ref=$(echo ${ref} | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
-
-	  # Skip read of the form #L<num> and assume its pointing to a line
-	  # number of a file and those don't have anchors
-      if [[ "${ref}" =~ ^L([0-9])+$ ]]; then
-        continue
-      fi
 
       # If we've seen this file before then grab its processed tmp file
       if [[ "${seenFiles[${fullpath}]+x}" != "" ]]; then
@@ -174,7 +174,7 @@ for file in ${mdFiles}; do
         # Lower case it.
         # Convert spaces to "-".
         # Drop all non alphanumeric chars.
-        # Twiidle section anchor if we've seen it before.
+        # Twiddle section anchor if we've seen it before.
         grep "^[[:space:]]*#" < ${fullpath} | \
           sed 's/[[:space:]]*##*[[:space:]]*//' | \
           sed 's/[[:space:]]*$//' | \
@@ -211,6 +211,12 @@ for file in ${mdFiles}; do
           sort | uniq >> ${anchorFile} || true
 
         # echo sections ; cat ${tmp}sections1
+      fi
+
+	  # Skip refs of the form #L<num> and assume its pointing to a line
+	  # number of a file and those don't have anchors
+      if [[ "${ref}" =~ ^L([0-9])+$ ]]; then
+        continue
       fi
 
       # Finally, look for the ref in the list of sections/anchors
