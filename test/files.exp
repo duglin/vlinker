@@ -7,6 +7,7 @@ Verifying: test/files/dir/subfile1.md
 test/files/dir/subfile1.md: Can't find: test/files/dir/../badlink.md
 Verifying: test/files/dup.md
 Verifying: test/files/empty.md
+Verifying: test/files/linenums.md
 Verifying: test/files/missingmd.md
 test/files/missingmd.md: Can't find: test/files/nofile.md
 Verifying: test/files/nada.md

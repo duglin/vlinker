@@ -151,6 +151,12 @@ for file in ${mdFiles}; do
       # Remove leading and trailing spaces
       ref=$(echo ${ref} | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
 
+	  # Skip read of the form #L<num> and assume its pointing to a line
+	  # number of a file and those don't have anchors
+      if [[ "${ref}" =~ ^L([0-9])+$ ]]; then
+        continue
+      fi
+
       # If we've seen this file before then grab its processed tmp file
       if [[ "${seenFiles[${fullpath}]+x}" != "" ]]; then
         anchorFile="${seenFiles[${fullpath}]}"
