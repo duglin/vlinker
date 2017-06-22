@@ -26,7 +26,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-REPO_ROOT=$(cd $(dirname "${BASH_SOURCE}")/.. && pwd)
+REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
 
 verbose=""
 debugFlag=""
@@ -84,7 +84,7 @@ if [ "$*" == "" ]; then
   arg="${REPO_ROOT}"
 fi
 
-mdFiles=$(find -L $* $arg -name "*.md" | sort | grep -v vendor | grep -v glide)
+mdFiles=$(find $* $arg -name "*.md" | sort | grep -v vendor | grep -v glide)
 
 clean
 for file in ${mdFiles}; do
@@ -123,7 +123,8 @@ for file in ${mdFiles}; do
 
     # An external href (ie. starts with http)
     if [ "${ref:0:4}" == "http" ]; then
-      if ! wget --timeout=10 -O /dev/null ${ref} > /dev/null 2>&1 ; then
+      if ! wget --no-check-certificate --timeout=10 -O /dev/null ${ref} \
+          > /dev/null 2>&1 ; then
         echo $file: Can\'t load: url ${ref} | tee -a ${tmp}3
       fi
       continue
@@ -148,11 +149,11 @@ for file in ${mdFiles}; do
         ref=${ref:1}
       fi
 
-	  if [[ ! -e "${fullpath}" ]]; then
-	  	echo "$file: Can't find referenced file '${fullpath}'" | \
-		  tee -a ${tmp}3
-	    continue
-	  fi
+      if [[ ! -e "${fullpath}" ]]; then
+        echo "$file: Can't find referenced file '${fullpath}'" | \
+          tee -a ${tmp}3
+        continue
+      fi
 
       # Remove leading and trailing spaces
       ref=$(echo ${ref} | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
@@ -213,8 +214,8 @@ for file in ${mdFiles}; do
         # echo sections ; cat ${tmp}sections1
       fi
 
-	  # Skip refs of the form #L<num> and assume its pointing to a line
-	  # number of a file and those don't have anchors
+      # Skip refs of the form #L<num> and assume its pointing to a line
+      # number of a file and those don't have anchors
       if [[ "${ref}" =~ ^L([0-9])+$ ]]; then
         continue
       fi
