@@ -26,7 +26,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
+REPO_ROOT=$(cd $(dirname "${BASH_SOURCE}")/.. && pwd)
 
 verbose=""
 debugFlag=""
@@ -84,14 +84,14 @@ if [ "$*" == "" ]; then
   arg="${REPO_ROOT}"
 fi
 
-mdFiles=$(find $* $arg -name "*.md" | sort | grep -v vendor | grep -v glide)
+mdFiles=$(find -L $* $arg -name "*.md" | sort | grep -v vendor | grep -v glide)
 
 clean
 for file in ${mdFiles}; do
   # echo scanning $file
   dir=$(dirname $file)
 
-  [[ -n "$verbose" ]] && echo "Verifying: $file"
+  [[ -n "$verbose" ]] && echo "> $file"
 
   # Replace ) with )\n so that each possible href is on its own line.
   # Then only grab lines that have [..](..) in them - put results in tmp file.

@@ -37,4 +37,4 @@ Should map to "sec-2"
 [ref 3](#sec-2)
 
 == EXPECTED ==
-Verifying: test/files/dup.md
+> test/files/dup.md

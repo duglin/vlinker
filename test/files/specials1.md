@@ -16,5 +16,5 @@ my header <a name="mine"></a>
 [bad back pointer](#yours)
 
 == EXPECTED ==
-Verifying: test/files/specials1.md
+> test/files/specials1.md
 test/files/specials1.md: Can't find section '#yours' in test/files/specials1.md

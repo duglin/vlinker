@@ -11,4 +11,4 @@ Are you sure Feature-X is something the Kubernetes team wants or will accept, or
 that it is implemented to fit with other changes in flight?
 
 == EXPECTED ==
-Verifying: test/files/specials2.md
+> test/files/specials2.md

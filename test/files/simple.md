@@ -43,7 +43,7 @@ This is a page with an unclosed ( and an unclosed [
 [bmark2]:http://foo2.com
 
 == EXPECTED ==
-Verifying: test/files/simple.md
+> test/files/simple.md
 test/files/simple.md: Can't find: test/files/link1.md
 test/files/simple.md: Can't find: test/files/link2.md
 test/files/simple.md: Can't find: test/files/bmark1

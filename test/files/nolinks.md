@@ -3,4 +3,4 @@ line 2
 line 3
 
 == EXPECTED ==
-Verifying: test/files/nolinks.md
+> test/files/nolinks.md

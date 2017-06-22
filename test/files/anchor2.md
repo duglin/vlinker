@@ -15,4 +15,4 @@ This is the Category 1 Overview section for anchor2.md
 
 This is the Category 2 overview section for anchor2.md
 == EXPECTED ==
-Verifying: test/files/anchor2.md
+> test/files/anchor2.md

@@ -8,4 +8,4 @@ This is a section with a number at the end
 ##link 1
 
 == EXPECTED ==
-Verifying: test/files/numend1.md
+> test/files/numend1.md

@@ -5,4 +5,4 @@
 
 
 == EXPECTED ==
-Verifying: test/files/numend2.md
+> test/files/numend2.md

@@ -22,4 +22,4 @@ empty.md
 )
 
 == EXPECTED ==
-Verifying: test/files/split3.md
+> test/files/split3.md

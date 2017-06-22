@@ -23,6 +23,6 @@ This is a general Overview section for anchor1.md
 
 This is the Category 2 overview section for anchor1.md
 == EXPECTED ==
-Verifying: test/files/anchor1.md
+> test/files/anchor1.md
 test/files/anchor1.md: Can't find section '#Overview' in test/files/anchor1.md
 test/files/anchor1.md: Can't find section '#Overview' in test/files/anchor2.md
