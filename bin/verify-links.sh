@@ -30,6 +30,7 @@ REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
 
 verbose=""
 debugFlag=""
+maxRetries="1"
 stop=""
 tmp=/tmp/out${RANDOM}
 
@@ -54,12 +55,14 @@ while [[ "$#" != "0" && "$1" == "-"* ]]; do
     case "${opts:0:1}" in
       v) verbose="1" ;;
       d) debugFlag="1" ; verbose="1" ;;
+      t) maxRetries="5" ;;
       -) stop="1" ;;
       ?) echo "Usage: $0 [OPTION]... [DIR|FILE]..."
          echo "Verify all links in markdown files."
          echo
          echo "  -v   show each file as it is checked"
          echo "  -d   show each href as it is found"
+         echo "  -t   retry GETs to http(s) URLs 5 times"
          echo "  -?   show this help text"
          echo "  --   treat remainder of args as dir/files"
          exit 0 ;;
@@ -119,14 +122,26 @@ for file in ${mdFiles}; do
     ref=$(echo $ref | sed "s/ *//" | sed "s/ *$//")
 
     # Show all hrefs - mainly for verifying in our tests
-    debug "Found: '$ref'"
+    debug "Checking: '$ref'"
 
     # An external href (ie. starts with http)
     if [ "${ref:0:4}" == "http" ]; then
-      if ! curl -f -s -k --connect-timeout 10 ${ref} \
-          > /dev/null 2>&1 ; then
-        echo $file: Can\'t load url: ${ref} | tee -a ${tmp}3
-      fi
+      try=0
+      while true ; do
+        if curl -f -s -k --connect-timeout 10 ${ref} > /dev/null 2>&1 ; then
+          break
+        fi
+        let try=try+1
+        if [ ${try} -eq ${maxRetries} ]; then
+          extra=""
+          if [ ${try} -gt 1 ]; then
+            extra="(tried ${try} times) "
+          fi
+          echo $file: Can\'t load url: ${ref} ${extra} | tee -a ${tmp}3
+          break
+        fi
+        sleep 1
+      done
       continue
     fi
 
