@@ -35,9 +35,28 @@ stop=""
 tmp=/tmp/out${RANDOM}
 
 trap clean EXIT
-unset seenFiles
-declare -A seenFiles
-let numSeenFiles=0 || true
+seenFiles=( ":" )   # just to prevent "undefined" errors
+
+# findPrevious will search for a file to see if we've seen it before.
+# If we have then return the matching "anchorFile". If we haven't
+# seen it then add it to "seenFiles" and create a new "anchorFile".
+# $1 == search file
+# Note we can't use a map because bash on a mac doesn't support it.
+foundAnchor=""
+function findPreviousFile() {
+  for f in "${seenFiles[@]}" ; do
+    orig=${f%%:*}
+	if [[ "${orig}" == "$1" ]]; then
+	  foundAnchor=${f#*:}
+	  return 0
+	fi
+  done
+
+  # Didn't it so create a new anchorFile and save it for next time
+  foundAnchor="${tmp}-anchors-${RANDOM}-${RANDOM}"
+  seenFiles+=("$1:${foundAnchor}")
+  return 1
+}
 
 function debug {
   if [[ "$debugFlag" != "" ]]; then
@@ -174,16 +193,13 @@ for file in ${mdFiles}; do
       ref=$(echo ${ref} | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
 
       # If we've seen this file before then grab its processed tmp file
-      if [[ "${seenFiles[${fullpath}]+x}" != "" ]]; then
-        anchorFile="${seenFiles[${fullpath}]}"
+	  if findPreviousFile "${fullpath}" ; then
+        anchorFile="${foundAnchor}"
       else
-        let numSeenFiles+=1
-        anchorFile="${tmp}-anchors-${numSeenFiles}"
-        seenFiles[${fullpath}]="${anchorFile}"
+        anchorFile="${foundAnchor}"
 
         # Search file for sections
-        unset used
-        declare -A used  # anchors used, seen+twiddled ones
+        used="" # anchors used, seen+twiddled ones
 
         # Find all section headers in the file.
         # Remove leading & trailing spaces.
@@ -198,7 +214,7 @@ for file in ${mdFiles}; do
           sed "s/  */-/g" | \
           sed "s/[^-a-zA-Z0-9]//g" | while read section ; do
             # If we haven't used this exact anchor before just use it now
-            if [[ "${used[${section}]+x}" == "" ]]; then
+            if [[ "${used}" != *" ${section} "* ]]; then
               anchor=${section}
             else
               # We've used this anchor before so add "-#" to the end.
@@ -206,7 +222,7 @@ for file in ${mdFiles}; do
               let num=1
               while true; do
                 anchor="${section}-${num}"
-                if [[ "${used[${anchor}]+x}" == "" ]]; then
+                if [[ "${used}" != *" ${anchor} "* ]]; then
                   break
                 fi
                 let num+=1
@@ -214,7 +230,7 @@ for file in ${mdFiles}; do
             fi
 
             echo "${anchor}"
-            used[${anchor}]="1"
+            used="${used} ${anchor} "
 
             debug "Mapped section '${section}' to '${anchor}'"
 
