@@ -19,8 +19,16 @@ rc="0"
 
 function test {
 	set +e
+
 	FLAGS=${FLAGS:-}
+
+	if [ ! -d $1 ]; then
+	    # Keep the space after the colon
+	    FLAGS=${FLAGS:-}$(grep "== *FLAGS: " $1 | sed "s/.*FLAGS://")
+	fi
+
 	"$EXE" ${FLAGS} "$1" > "$TMPOUT" 2>&1 
+
 	if [ -e "$1.exp" ]; then
 		diff "$TMPOUT" "$1.exp" > $TMPOUT.diff 2>&1
 		ec=$?
@@ -44,6 +52,6 @@ for i in $(find ${DIR}/files -name \*.md); do
 	FLAGS=-v test "${i}"
 done
 
-FLAGS=-v test ${DIR}/files
+FLAGS="-v -x" test ${DIR}/files
 
 exit $rc

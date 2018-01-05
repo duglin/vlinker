@@ -31,6 +31,7 @@ REPO_ROOT=$(dirname "${BASH_SOURCE}")/..
 verbose=""
 debugFlag=""
 maxRetries="1"
+skipExternal=""
 stop=""
 tmp=/tmp/out${RANDOM}
 
@@ -72,9 +73,10 @@ while [[ "$#" != "0" && "$1" == "-"* ]]; do
   opts="${1:1}"
   while [[ "$opts" != "" ]]; do
     case "${opts:0:1}" in
-      v) verbose="1" ;;
       d) debugFlag="1" ; verbose="1" ;;
       t) maxRetries="5" ;;
+      v) verbose="1" ;;
+	  x) skipExternal="1" ;;
       -) stop="1" ;;
       ?) echo "Usage: $0 [OPTION]... [DIR|FILE]..."
          echo "Verify all links in markdown files."
@@ -145,6 +147,10 @@ for file in ${mdFiles}; do
 
     # An external href (ie. starts with http)
     if [ "${ref:0:4}" == "http" ]; then
+	  if [ "$skipExternal" == "1" ]; then
+	    continue
+	  fi
+
       try=0
       while true ; do
         if curl -f -s -k --connect-timeout 10 ${ref} > /dev/null 2>&1 ; then
