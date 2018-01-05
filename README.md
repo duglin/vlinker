@@ -7,7 +7,7 @@ Verify Links in md files
 
 To run it:
 ```
-bin/verify-links.sh [-v] [-p] [-?] [ dir | file ...]
+bin/verify-links.sh [-v] [-p] [-x] [-?] [ dir | file ...]
 ```
 
 # TODOs

@@ -47,10 +47,10 @@ foundAnchor=""
 function findPreviousFile() {
   for f in "${seenFiles[@]}" ; do
     orig=${f%%:*}
-	if [[ "${orig}" == "$1" ]]; then
-	  foundAnchor=${f#*:}
-	  return 0
-	fi
+    if [[ "${orig}" == "$1" ]]; then
+      foundAnchor=${f#*:}
+      return 0
+    fi
   done
 
   # Didn't it so create a new anchorFile and save it for next time
@@ -76,7 +76,7 @@ while [[ "$#" != "0" && "$1" == "-"* ]]; do
       d) debugFlag="1" ; verbose="1" ;;
       t) maxRetries="5" ;;
       v) verbose="1" ;;
-	  x) skipExternal="1" ;;
+      x) skipExternal="1" ;;
       -) stop="1" ;;
       ?) echo "Usage: $0 [OPTION]... [DIR|FILE]..."
          echo "Verify all links in markdown files."
@@ -147,9 +147,9 @@ for file in ${mdFiles}; do
 
     # An external href (ie. starts with http)
     if [ "${ref:0:4}" == "http" ]; then
-	  if [ "$skipExternal" == "1" ]; then
-	    continue
-	  fi
+      if [ "$skipExternal" == "1" ]; then
+        continue
+      fi
 
       try=0
       while true ; do
@@ -199,7 +199,7 @@ for file in ${mdFiles}; do
       ref=$(echo ${ref} | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
 
       # If we've seen this file before then grab its processed tmp file
-	  if findPreviousFile "${fullpath}" ; then
+      if findPreviousFile "${fullpath}" ; then
         anchorFile="${foundAnchor}"
       else
         anchorFile="${foundAnchor}"
