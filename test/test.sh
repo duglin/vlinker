@@ -54,4 +54,25 @@ done
 
 FLAGS="-v -x" test ${DIR}/files
 
+# this should skip everything due to the -s
+out=$( "$EXE" -v -x -s .md ${DIR}/files | tee $TMPOUT 2>&1 ) || true
+if [[ "${out}" != "" ]]; then
+  echo "FAIL: -s test 1"
+  cat $TMPOUT
+  rc="1"
+else
+  echo "PASS: -s test 1"
+fi
+
+# this should skip everything due to the -s
+out=$( "$EXE" -v -x -s.md ${DIR}/files | tee $TMPOUT 2>&1 ) || true
+if [[ "${out}" != "" ]]; then
+  echo "FAIL: -s test 2"
+  cat $TMPOUT
+  rc="1"
+else
+  echo "PASS: -s test 2"
+fi
+
+
 exit $rc
