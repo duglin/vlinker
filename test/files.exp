@@ -8,6 +8,9 @@ test/files/dir/subfile1.md: Can't find: test/files/dir/../badlink.md
 > test/files/dup.md
 > test/files/empty.md
 > test/files/external.md
+> test/files/images.md
+test/files/images.md: Can't find: test/files/noimage.png
+test/files/images.md: Can't find: test/files/noimage.png
 > test/files/linenums.md
 test/files/linenums.md: Can't find referenced file 'test/files/bad.go'
 > test/files/missingmd.md

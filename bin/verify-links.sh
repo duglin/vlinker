@@ -166,10 +166,15 @@ for file in ${mdFiles}; do
   sed "s/.*\[*\]\([^()]*\)/\1/" < ${tmp}1 > ${tmp}2  || continue
 
   cat ${tmp}2 | while read line ; do
-    # Strip off the leading and trailing parens, and then spaces
+    # Strip off the leading and trailing parens
     ref=${line#*(}
     ref=${ref%)*}
-    ref=$(echo $ref | sed "s/ *//" | sed "s/ *$//")
+
+    # Strip off any "title" associated with the href
+    ref=$(echo $ref | sed 's/ ".*//')
+
+    # Strip off leading and trailing spaces
+    ref=$(echo $ref | sed "s/^ *//" | sed "s/ *$//")
 
     # Show all hrefs - mainly for verifying in our tests
     debug "Checking: '$ref'"
