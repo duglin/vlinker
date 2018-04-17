@@ -242,15 +242,15 @@ for file in ${mdFiles}; do
         used="" # anchors used, seen+twiddled ones
 
         # Find all section headers in the file.
-		# extract 'xxx' from [xxx](yyy)
+        # extract 'xxx' from [xxx](yyy)
         # Remove leading & trailing spaces.
         # Lower case it.
         # Convert spaces to "-".
         # Drop all non alphanumeric chars.
         # Twiddle section anchor if we've seen it before.
         grep "^[[:space:]]*#" < ${fullpath} | \
-		  sed "s/\[\(.*\)\](.*)/\1/" | \
-		  sed 's/^[[:space:]]*##*[[:space:]]*//' | \
+          sed "s/\[\(.*\)\](.*)/\1/" | \
+          sed 's/^[[:space:]]*##*[[:space:]]*//' | \
           sed 's/[[:space:]]*$//' | \
           tr '[:upper:]' '[:lower:]' | \
           sed "s/  */-/g" | \
