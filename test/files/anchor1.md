@@ -21,6 +21,8 @@ This is a general Overview section for anchor1.md
 
 ## Section Overview
 
+# [overview 3](http://example.com)
+
 This is the Category 2 overview section for anchor1.md
 == EXPECTED ==
 > test/files/anchor1.md
