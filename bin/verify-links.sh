@@ -180,7 +180,7 @@ for file in ${mdFiles}; do
     debug "Checking: '$ref'"
 
     # An external href (ie. starts with http)
-    if [ "${ref:0:4}" == "http" ]; then
+    if [ "${ref:0:5}" == "http:" ] || [ "${ref:0:6}" == "https:" ]; then
       if [ "$skipExternal" == "1" ]; then
         continue
       fi
